@@ -1,6 +1,8 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux';
 import { checkOutThunk, getCartThunk, removeFromCartThunk } from '../store/slices/cart.slice';
+import { initMercadoPago, Wallet } from '@mercadopago/sdk-react'
+import axios from "axios";
 import Cart from './Cart'
 
 const DrawerCart = () => {
@@ -13,16 +15,39 @@ const DrawerCart = () => {
     dispatch(getCartThunk())
   }, [])
   const cart = useSelector(state=>state.cart);
+  const [preferenceId, setPreferenceId] = useState(null)
+  const PUBLIC_KEY = import.meta.env.VITE_PUBLIC_KEY;
+  initMercadoPago(PUBLIC_KEY,{locale:"es-AR"});
+  const createPreference = async ()=>{
+    try {
+      const response = await axios.post("/api/create_preference", JSON.stringify({ cart: cart })
+    );
+      const {id} = response.data;
+      return id
+    } catch (error) {
+      console.log(error);
+    }
+  }
+  const handleBuy = async ()=> {
+    const id = await createPreference();
+    if (id) {
+      setPreferenceId(id);
+    }
+  }
+    //llamada al localhost
+    // useEffect(() => {
+    //   axios
+    //     .then((res) => console.log(['respuesta del back',res.data])).catch(e=> console.error("error del back",e))
+    // }, []);
   return (
     <div className="drawer-side">
       <label htmlFor="cart-drawer" className="drawer-overlay"></label>
 
       <div className="flex flex-col divide-y justify-between p-4 w-80 bg-base-100 text-base-content">
-        {/* <!-- Sidebar content here --> */}
         <h2 className="font-bold text-xl">Carrito de Compras</h2>
+        {/* <!-- Sidebar content here --> */}
         <div className="cart">
         { 
-
         cart.map((cartItem,index)=>(
           <li key={index} className='flex items-center justify-between'>
             <div className="cart-details">
@@ -43,12 +68,18 @@ const DrawerCart = () => {
         }
         </div>
         <div className="checkout-section py-4 px-2 ">
-          <div className="total flex justify-between mb-4">
+          <div className="total flex justify-between mb-4 ">
             
             <span className="">total</span>
             <b>${priceTotal}</b>
           </div>
-          <button className="btn btn-block" onClick={()=>dispatch(checkOutThunk())}>Checkout</button>
+          {/* <button className="btn btn-block" onClick={()=>dispatch(checkOutThunk())}>Checkout</button> */}
+          
+          <button disabled={!cart.length} className="btn btn-block" onClick={handleBuy}>Checkout</button>
+          {preferenceId && cart.length &&
+            <Wallet initialization={{ preferenceId: preferenceId }}  />
+            // <Wallet initialization={{ preferenceId: preferenceId }} customization={{ texts:{ valueProp: 'convenience'}}} />
+          }
         </div>
       </div>
     </div>

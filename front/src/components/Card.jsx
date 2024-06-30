@@ -11,7 +11,7 @@ const Card = ({ product }) => {
         <div className="card-body h-64">
           <div className="badge badge-outline">{product.category}</div>
 
-          <h2 className="card-title">{product.title}</h2>
+          <h2 className="card-title  text-ellipsis">{product.title.length > 60 ? `${product.title.substring(0, 60)}...` : product.title}</h2>
           <span className="text-slate-500">Price</span>
           <p className="font-bold">${product.price}</p>
           {/* <div className="card-actions justify-end">

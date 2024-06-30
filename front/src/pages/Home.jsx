@@ -51,12 +51,6 @@ const Home = () => {
   };
   const filteredProducts = products.filter((product) => product.price <= priceMax);
 
-  //llamada al localhost
-  useEffect(() => {
-    axios
-      .get('/api/log')
-      .then((res) => console.log(['respuesta del back',res.data])).catch(e=> console.error("error del back",e))
-  }, []);
   return (
     <div className="pb-5 bg-base-200">
       <div className="form-control py-8">
